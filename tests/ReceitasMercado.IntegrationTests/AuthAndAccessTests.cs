@@ -30,6 +30,21 @@ public class AuthAndAccessTests(FactoryFixture fx) : IClassFixture<FactoryFixtur
     }
 
     [Fact]
+    public async Task Creating_pantries_makes_the_user_admin_and_is_capped_at_five()
+    {
+        var a = await Env.NewUser(F);
+        var created = await a.Ok(a.Send(HttpMethod.Post, "/api/despensas", new { nome = "Casa de praia" }, tenant: false));
+        Assert.Equal("admin", created.GetProperty("papel").GetString());
+        var list = await a.Ok(a.Send(HttpMethod.Get, "/api/despensas", tenant: false));
+        Assert.Equal(2, list.GetArrayLength());
+
+        for (var i = 0; i < 3; i++) await a.Ok(a.Send(HttpMethod.Post, "/api/despensas", new { nome = $"Extra {i}" }, tenant: false));
+        var (status, body, _) = await a.Send(HttpMethod.Post, "/api/despensas", new { nome = "Demais" }, tenant: false);
+        Assert.Equal(HttpStatusCode.Conflict, status);
+        Assert.Equal("LIMITE_DESPENSAS", body.GetProperty("codigo").GetString());
+    }
+
+    [Fact]
     public async Task Weak_password_and_invalid_body_use_the_error_contract()
     {
         var api = new Api(F.CreateClient(), F);

@@ -24,6 +24,17 @@ public static class PantryEndpoints
                 .ToListAsync(ct));
         });
 
+        g.MapPost("/despensas", async (NomeRequest req, HttpContext http, AppDbContext db, PantryService pantry, CancellationToken ct) =>
+        {
+            var userId = http.User.RequireUserId();
+            var owned = await db.Membros.CountAsync(m => m.UsuarioId == userId && m.Status == StatusMembro.Ativo, ct);
+            if (owned >= 5)
+                throw BusinessException.Conflict("LIMITE_DESPENSAS", "Você já participa do máximo de 5 despensas.");
+            var d = pantry.CreateWithAdmin(userId, req.Nome.Trim());
+            await db.SaveChangesAsync(ct);
+            return Results.Created($"/api/despensas/{d.Id}", new { id = d.Id, nome = d.Nome, papel = Papel.Admin });
+        });
+
         g.MapGet("/despensas/{despensaId:guid}", async (TenantContext t, AppDbContext db, CancellationToken ct) =>
             Results.Ok(await db.Despensas.AsNoTracking().Where(d => d.Id == t.DespensaId)
                 .Select(d => new { d.Id, d.Nome, d.Fuso, d.AlertaValidadeDias, papel = t.Papel }).FirstAsync(ct))).Leitor();
