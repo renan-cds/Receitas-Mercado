@@ -1,6 +1,6 @@
 # Planejamento — Receitas-Mercado
 
-**Status:** aguardando aprovação. Não iniciar implementação de produção até a seção 14 ser decidida.
+**Status:** implementado (etapas E0–E13 do roadmap). O MVP está no repositório; este documento continua sendo a referência funcional. Os desvios em relação ao plano estão listados no [Apêndice D](#apêndice-d--desvios-do-plano-na-implementação).
 
 **Produto:** aplicativo web de estoque doméstico de mantimentos integrado a receitas culinárias.
 
@@ -1307,3 +1307,21 @@ Texto do percentual: “Compatibilidade estimada. Itens sem correspondência con
 - Scraping genérico de HTML de blogs.
 - Fila offline de escrita.
 - Tratar catálogo de receitas como estoque de ingredientes.
+
+---
+
+## Apêndice D — Desvios do plano na implementação
+
+Decisões tomadas durante a implementação que diferem do texto acima. O comportamento descrito nas seções 3, 4 e 6 foi mantido.
+
+- **Componentes de UI:** em vez de `react-aria-components`, foram usados HTML nativo acessível e `<dialog>` (foco preso, Esc, `aria-labelledby`). Menos dependências, mesma conformidade pretendida com WCAG 2.2 AA.
+- **Unidades:** o código da unidade (`G`, `KG`, `ML`…) é a chave primária da tabela, não um `Guid`.
+- **Busca:** receitas e ingredientes usam coluna `BuscaTexto` normalizada (sem acento, minúscula) em vez de full-text search do PostgreSQL. Suficiente para o volume doméstico; FTS fica como evolução.
+- **Criação de receita:** `POST /receitas` (idempotente) recebe o rascunho já revisado, substituindo `/receitas/from-revisao`. Importação, busca externa e IA só devolvem rascunhos; nada é salvo antes da revisão.
+- **Paginação:** cursores por deslocamento codificado, exceto `/estoque/movimentacoes`, que usa cursor por chave (`criadoEm`, `id`).
+- **Modelo:** `ReceitaIngrediente` guarda `Nome` (texto exibido) além do vínculo opcional; `Movimentacao` guarda `Sentido` (+1/−1) para somas simples.
+- **Saída de despensa:** ao sair de uma despensa, catálogos pessoais e favoritas do usuário nela são apagados.
+- **Novas rotas:** `POST /despensas` (até 5 despensas por usuário) e `GET /despensas/{id}/arquivos/{arquivoId}` (imagens privadas por despensa, cache privado).
+- **Respostas idempotentes:** o corpo é armazenado como texto para reprodução byte a byte (`Idempotency-Replayed: true`).
+- **CSRF:** cookie `SameSite=Lax` mais cabeçalho obrigatório `X-Requested-With` nos métodos não seguros de `/api`.
+- **Infraestrutura:** `Dockerfile` multi-stage (Node para o PWA, .NET para a API servindo o PWA em `wwwroot`), `docker-compose.yml` (API + PostgreSQL + backup diário) e `scripts/backup.sh` / `scripts/restore.sh`. O Docker não pôde ser executado no ambiente de desenvolvimento; backup/restauração foram validados com `pg_dump`/`psql` locais.
