@@ -255,3 +255,14 @@ public sealed class IaAdaptarRequest
     [Range(typeof(decimal), "0.5", "100")] public decimal Porcoes { get; init; }
     public bool ReescreverEtapas { get; init; }
 }
+
+public sealed class LoteAtualizarRequest
+{
+    public DateOnly? DataValidade { get; init; }
+    [StringLength(500)] public string? Observacao { get; init; }
+}
+
+public sealed class LoteDescartarRequest
+{
+    [StringLength(500)] public string? Motivo { get; init; }
+}

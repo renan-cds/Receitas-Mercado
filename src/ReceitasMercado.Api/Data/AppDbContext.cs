@@ -320,5 +320,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUser
             e.HasIndex(x => new { x.UsuarioId, x.Rota, x.Chave }).IsUnique();
             e.HasIndex(x => x.CriadoEm);
         });
+
+        foreach (var entityType in b.Model.GetEntityTypes())
+        {
+            var key = entityType.FindPrimaryKey();
+            if (key is { Properties.Count: 1 } && key.Properties[0].ClrType == typeof(Guid) && entityType.ClrType != typeof(Usuario))
+                key.Properties[0].ValueGenerated = Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.Never;
+        }
     }
 }

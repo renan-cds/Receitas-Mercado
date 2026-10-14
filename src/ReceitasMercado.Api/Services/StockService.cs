@@ -68,7 +68,6 @@ public sealed class StockService(AppDbContext db, TimeProvider clock)
             DataEntrada = now, Origem = origem, Observacao = observacao,
         };
         db.Lotes.Add(lot);
-        item.Lotes.Add(lot);
         var mov = NewMovement(despensaId, item.Id, lot.Id, tipo, 1, qty, ing.UnidadeReferenciaCodigo, motivo, userId, key, now);
         mov.ItemListaCompraId = itemListaId;
         db.Movimentacoes.Add(mov);
@@ -122,7 +121,6 @@ public sealed class StockService(AppDbContext db, TimeProvider clock)
                 Origem = OrigemLote.Ajuste, Observacao = motivo,
             };
             db.Lotes.Add(lot);
-            item.Lotes.Add(lot);
         }
         var mov = NewMovement(despensaId, item.Id, lot.Id, TipoMovimentacao.Correcao, 1, qty, ing.UnidadeReferenciaCodigo, motivo, userId, key, now);
         db.Movimentacoes.Add(mov);

@@ -11,7 +11,7 @@ public static class AuthEndpoints
 {
     public static void Map(RouteGroupBuilder api)
     {
-        var anon = api.MapGroup("/auth").AddEndpointFilter<ValidationFilter>();
+        var anon = api.MapGroup("/auth").AddEndpointFilter<ValidationFilter>().RequireRateLimiting("auth");
         anon.MapPost("/registrar", Registrar);
         anon.MapPost("/entrar", Entrar);
 
@@ -117,7 +117,7 @@ public static class AuthEndpoints
     }
 
     private static async Task<IResult> ExcluirConta(
-        ExcluirContaRequest req, HttpContext http, UserManager<Usuario> users, SignInManager<Usuario> signIn,
+        [Microsoft.AspNetCore.Mvc.FromBody] ExcluirContaRequest req, HttpContext http, UserManager<Usuario> users, SignInManager<Usuario> signIn,
         AppDbContext db, PantryService pantry, CancellationToken ct)
     {
         var user = await users.GetUserAsync(http.User) ?? throw BusinessException.NotFound("Usuário");

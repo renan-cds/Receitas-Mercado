@@ -12,15 +12,17 @@ public sealed class DraftBuilder(AppDbContext db)
             .Select(i => new IngredientCandidate(i.Id, i.Nome))
             .ToListAsync(ct);
 
-    private static object Line(
-        string nome, string? texto, decimal? qty, string? unit, bool optional, IReadOnlyList<IngredientCandidate> candidates)
+    public static object Line(
+        string nome, string? texto, decimal? qty, string? unit, bool optional, IReadOnlyList<IngredientCandidate> candidates,
+        bool capAtInferred = false)
     {
         var match = IngredientMatcher.Match(nome, candidates);
+        var confidence = capAtInferred && match.Confidence == Confidence.Confirmada ? Confidence.Inferida : match.Confidence;
         var names = candidates.ToDictionary(c => c.Id, c => c.Name);
         return new
         {
             nome, textoOriginal = texto, quantidade = qty, unidade = unit, opcional = optional,
-            ingredienteId = match.BestId, confianca = match.Confidence,
+            ingredienteId = match.BestId, confianca = confidence,
             candidatos = match.OtherCandidates.Take(5).Select(id => new { id, nome = names[id] }),
         };
     }
@@ -31,7 +33,7 @@ public sealed class DraftBuilder(AppDbContext db)
         var lines = r.IngredientLines.Select(text =>
         {
             var parsed = IngredientTextParser.Parse(text);
-            return Line(parsed.Name, text, parsed.Quantity, parsed.UnitCode, parsed.Optional, candidates);
+            return Line(parsed.Name, text, parsed.Quantity, parsed.UnitCode, parsed.Optional, candidates, capAtInferred: true);
         }).ToList();
 
         if (r.Servings is null) avisos.Add("O rendimento não foi informado pela fonte; ajustamos para 4 porções. Revise antes de salvar.");
@@ -51,7 +53,7 @@ public sealed class DraftBuilder(AppDbContext db)
     {
         var lines = r.Ingredients.Select(i =>
         {
-            var line = Line(i.Name, null, i.Quantity, i.UnitCode, false, candidates);
+            var line = Line(i.Name, null, i.Quantity, i.UnitCode, false, candidates, capAtInferred: true);
             return line;
         }).ToList();
 

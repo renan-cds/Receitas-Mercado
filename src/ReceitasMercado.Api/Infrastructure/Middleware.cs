@@ -85,7 +85,7 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
                 "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; " +
                 "connect-src 'self'; font-src 'self'; manifest-src 'self'; worker-src 'self'; " +
                 "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
-            if (http.Request.Path.StartsWithSegments("/api")) h["Cache-Control"] = "no-store";
+            if (http.Request.Path.StartsWithSegments("/api") && !h.ContainsKey("Cache-Control")) h["Cache-Control"] = "no-store";
             return Task.CompletedTask;
         });
         return next(http);

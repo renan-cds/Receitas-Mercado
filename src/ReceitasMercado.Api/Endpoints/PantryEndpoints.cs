@@ -43,7 +43,7 @@ public static class PantryEndpoints
             return Results.Ok(new { d.Id, d.Nome, d.Fuso, d.AlertaValidadeDias });
         }).Admin();
 
-        g.MapDelete("/despensas/{despensaId:guid}", async (ExcluirDespensaRequest req, TenantContext t, AppDbContext db, PantryService pantry, CancellationToken ct) =>
+        g.MapDelete("/despensas/{despensaId:guid}", async ([Microsoft.AspNetCore.Mvc.FromBody] ExcluirDespensaRequest req, TenantContext t, AppDbContext db, PantryService pantry, CancellationToken ct) =>
         {
             var d = await db.Despensas.AsNoTracking().FirstAsync(x => x.Id == t.DespensaId, ct);
             if (!string.Equals(d.Nome, req.ConfirmacaoNome.Trim(), StringComparison.Ordinal))
@@ -105,7 +105,7 @@ public static class PantryEndpoints
             var userId = http.User.RequireUserId();
             await using var tx = await db.Database.BeginTransactionAsync(ct);
             var hash = HashToken(token);
-            await db.Database.ExecuteSqlInterpolatedAsync($"select 1 from convites_despensa where token_hash = {hash} for update", ct);
+            await db.Database.ExecuteSqlInterpolatedAsync($"select 1 from convites where token_hash = {hash} for update", ct);
             var invite = await FindInvite(db, token, ct);
 
             var existing = await db.Membros.FirstOrDefaultAsync(m => m.DespensaId == invite.DespensaId && m.UsuarioId == userId, ct);
