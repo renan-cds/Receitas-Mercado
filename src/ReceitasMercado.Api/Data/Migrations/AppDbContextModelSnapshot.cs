@@ -740,7 +740,7 @@ namespace ReceitasMercado.Api.Data.Migrations
 
                     b.Property<string>("ResponseBody")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("text")
                         .HasColumnName("response_body");
 
                     b.Property<string>("Rota")

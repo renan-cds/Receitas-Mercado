@@ -12,7 +12,7 @@ using ReceitasMercado.Api.Data;
 namespace ReceitasMercado.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261014001628_Inicial")]
+    [Migration("20261014002207_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -743,7 +743,7 @@ namespace ReceitasMercado.Api.Data.Migrations
 
                     b.Property<string>("ResponseBody")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("text")
                         .HasColumnName("response_body");
 
                     b.Property<string>("Rota")

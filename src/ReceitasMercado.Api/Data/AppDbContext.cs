@@ -316,7 +316,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUser
             e.Property(x => x.Rota).HasMaxLength(200);
             e.Property(x => x.Chave).HasMaxLength(100);
             e.Property(x => x.RequestHash).HasMaxLength(64);
-            e.Property(x => x.ResponseBody).HasColumnType("jsonb");
             e.HasIndex(x => new { x.UsuarioId, x.Rota, x.Chave }).IsUnique();
             e.HasIndex(x => x.CriadoEm);
         });
