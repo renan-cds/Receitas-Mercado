@@ -19,8 +19,7 @@ RUN dotnet publish src/ReceitasMercado.Api/ReceitasMercado.Api.csproj -c Release
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-RUN useradd --uid 10001 --create-home app
-COPY --from=api /app ./
+COPY --from=api --chown=app:app /app ./
 USER app
 ENV ASPNETCORE_URLS=http://+:8080 \
     ForwardedHeaders__Enabled=true
