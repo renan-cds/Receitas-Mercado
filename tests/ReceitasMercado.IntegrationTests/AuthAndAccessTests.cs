@@ -1,5 +1,8 @@
 using System.Net;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using ReceitasMercado.Api.Data;
 
 namespace ReceitasMercado.IntegrationTests;
 
@@ -27,6 +30,10 @@ public class AuthAndAccessTests(FactoryFixture fx) : IClassFixture<FactoryFixtur
         Assert.Equal(HttpStatusCode.Unauthorized, badStatus);
         Assert.Equal("CREDENCIAIS_INVALIDAS", bad.GetProperty("codigo").GetString());
         await wrong.Ok(wrong.Send(HttpMethod.Post, "/api/auth/entrar", new { email = "ana@teste.com", senha = "senha-segura-123" }, tenant: false));
+
+        using var scope = F.Services.CreateScope();
+        var keys = await scope.ServiceProvider.GetRequiredService<AppDbContext>().DataProtectionKeys.CountAsync();
+        Assert.True(keys > 0, "As chaves de login precisam ficar no PostgreSQL para sobreviver a um host que dorme.");
     }
 
     [Fact]

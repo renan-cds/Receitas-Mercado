@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ReceitasMercado.Domain;
 
 namespace ReceitasMercado.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUserContext<Usuario, Guid>(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityUserContext<Usuario, Guid>(options), IDataProtectionKeyContext
 {
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Despensa> Despensas => Set<Despensa>();
@@ -34,6 +36,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUser
     public DbSet<ExecucaoIa> ExecucoesIa => Set<ExecucaoIa>();
     public DbSet<Arquivo> Arquivos => Set<Arquivo>();
     public DbSet<Idempotencia> Idempotencias => Set<Idempotencia>();
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -308,8 +311,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUser
             e.Property(x => x.NomeOriginal).HasMaxLength(200);
             e.Property(x => x.ContentType).HasMaxLength(60);
             e.Property(x => x.CaminhoRelativo).HasMaxLength(300);
+            e.Property(x => x.Conteudo).HasColumnType("bytea");
             e.HasOne<Despensa>().WithMany().HasForeignKey(x => x.DespensaId).OnDelete(DeleteBehavior.Cascade);
         });
+
+        b.Entity<DataProtectionKey>(e => e.ToTable("data_protection_keys"));
 
         b.Entity<Idempotencia>(e =>
         {

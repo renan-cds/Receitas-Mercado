@@ -1,12 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using ReceitasMercado.Api.Data;
 using ReceitasMercado.Api.Infrastructure;
-using ReceitasMercado.Api.Integrations;
 using ReceitasMercado.Domain;
 
 namespace ReceitasMercado.Api.Services;
 
-public sealed class PantryService(AppDbContext db, IFileStorage files, TimeProvider clock)
+public sealed class PantryService(AppDbContext db, TimeProvider clock)
 {
     public const int MaxMembers = 10;
 
@@ -75,6 +74,5 @@ public sealed class PantryService(AppDbContext db, IFileStorage files, TimeProvi
         await db.Usuarios.Where(u => u.DespensaAtivaId == despensaId)
             .ExecuteUpdateAsync(s => s.SetProperty(u => u.DespensaAtivaId, (Guid?)null), ct);
         await db.Despensas.Where(d => d.Id == despensaId).ExecuteDeleteAsync(ct);
-        files.DeleteDirectory(despensaId.ToString("N"));
     }
 }

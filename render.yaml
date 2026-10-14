@@ -1,0 +1,18 @@
+# Blueprint do Render (plano Free). O banco NÃO vai no Render — use Neon (não apaga o dado).
+# 1. Crie um projeto em https://neon.tech e copie a connection string (sslmode=require).
+# 2. No Render: New → Blueprint → este repositório.
+# 3. Cole ConnectionStrings__Default quando o painel pedir (sync: false).
+services:
+  - type: web
+    name: receitas-mercado
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ForwardedHeaders__Enabled
+        value: "true"
+      - key: ConnectionStrings__Default
+        sync: false

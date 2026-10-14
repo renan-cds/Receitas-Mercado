@@ -749,7 +749,7 @@ Interfaces no Application:
 - `IRecipeSearchClient` → TheMealDB
 - `IRecipeUrlImporter` → fetch + JSON-LD
 - `IAiCompletionClient` → OpenAI compatible
-- `IFileStorage` → disco
+- Arquivos de receita → `bytea` no PostgreSQL (sobrevive a sleep em PaaS gratuito)
 - `IClock`, `IIdGenerator`
 
 Trocar TheMealDB ou o provedor de IA não altera Domain.
@@ -1325,3 +1325,4 @@ Decisões tomadas durante a implementação que diferem do texto acima. O compor
 - **Respostas idempotentes:** o corpo é armazenado como texto para reprodução byte a byte (`Idempotency-Replayed: true`).
 - **CSRF:** cookie `SameSite=Lax` mais cabeçalho obrigatório `X-Requested-With` nos métodos não seguros de `/api`.
 - **Infraestrutura:** `Dockerfile` multi-stage (Node para o PWA, .NET para a API servindo o PWA em `wwwroot`), `docker-compose.yml` (API + PostgreSQL + backup diário) e `scripts/backup.sh` / `scripts/restore.sh`. O Docker não pôde ser executado no ambiente de desenvolvimento; backup/restauração foram validados com `pg_dump`/`psql` locais.
+- **PaaS gratuito:** chaves de Data Protection e bytes das imagens ficam no PostgreSQL (não em disco local), para o app sobreviver a sleep/redeploy no Render Free ou Azure F1. Banco recomendado: Neon Free (não apaga o dado). `GET /health` é liveness sem ping no banco (para o health check do Render não acordar o Neon o tempo todo); `GET /health/ready` verifica o Postgres. `render.yaml` documenta o blueprint.

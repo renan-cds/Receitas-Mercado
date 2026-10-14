@@ -25,6 +25,10 @@ builder.Host.UseSerilog((context, services, logger) => logger
 
 var config = builder.Configuration;
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? Environment.GetEnvironmentVariable("WEBSITES_PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://+:{port}");
+
 builder.Services.AddDbContext<AppDbContext>(options => options
     .UseNpgsql(config.GetConnectionString("Default")
         ?? throw new InvalidOperationException("Configure ConnectionStrings:Default."))
@@ -32,7 +36,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options
 
 builder.Services.AddDataProtection()
     .SetApplicationName("ReceitasMercado")
-    .PersistKeysToFileSystem(new DirectoryInfo(config["DataProtection:KeysPath"] ?? "data/keys"));
+    .PersistKeysToDbContext<AppDbContext>();
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme).AddIdentityCookies();
 builder.Services.AddIdentityCore<Usuario>(options =>
@@ -91,7 +95,6 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<HourlyLimiter>();
 builder.Services.Configure<ImportOptions>(config.GetSection("Import"));
 builder.Services.AddSingleton<IPageFetcher, SafePageFetcher>();
-builder.Services.AddSingleton<IFileStorage>(_ => new DiskFileStorage(config["Storage:Path"] ?? "data/files"));
 
 builder.Services.AddHttpClient<IRecipeSearchClient, TheMealDbClient>(client =>
 {
@@ -152,7 +155,7 @@ if (config.GetValue("Database:MigrateOnStart", true))
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
-if (config.GetValue("ForwardedHeaders:Enabled", false)) app.UseForwardedHeaders();
+if (config.GetValue("ForwardedHeaders:Enabled", true)) app.UseForwardedHeaders();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
@@ -180,7 +183,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantMiddleware>();
 
-app.MapGet("/health", async (AppDbContext db, CancellationToken ct) =>
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/health/ready", async (AppDbContext db, CancellationToken ct) =>
     await db.Database.CanConnectAsync(ct)
         ? Results.Ok(new { status = "ok" })
         : Results.Json(new { status = "indisponivel" }, statusCode: 503));

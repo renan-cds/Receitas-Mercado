@@ -44,7 +44,6 @@ public sealed class AppFactory : WebApplicationFactory<Program>
         ?? "Host=localhost;Port=5432;Database=postgres;Username=rm;Password=rm_dev_pw";
 
     public string DatabaseName { get; } = "rm_test_" + Guid.NewGuid().ToString("N")[..12];
-    private readonly string _dir = Path.Combine(Path.GetTempPath(), "rm-tests-" + Guid.NewGuid().ToString("N"));
     public FakeAi Ai { get; } = new();
     public FakeFetcher Fetcher { get; } = new();
     public FakeSearch Search { get; } = new();
@@ -64,8 +63,6 @@ public sealed class AppFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", ConnectionString);
-        builder.UseSetting("DataProtection:KeysPath", Path.Combine(_dir, "keys"));
-        builder.UseSetting("Storage:Path", Path.Combine(_dir, "files"));
         builder.UseSetting("RateLimit:AuthPerMinute", "100000");
         builder.UseSetting("Ai:AllowPrivateEndpoints", "true");
         builder.ConfigureServices(services =>
@@ -92,7 +89,6 @@ public sealed class AppFactory : WebApplicationFactory<Program>
             command.ExecuteNonQuery();
         }
         catch (NpgsqlException) { }
-        try { Directory.Delete(_dir, recursive: true); } catch (IOException) { }
     }
 }
 

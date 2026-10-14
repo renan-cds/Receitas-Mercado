@@ -19,14 +19,11 @@ RUN dotnet publish src/ReceitasMercado.Api/ReceitasMercado.Api.csproj -c Release
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-RUN useradd --uid 10001 --create-home app && mkdir -p /data && chown app /data
+RUN useradd --uid 10001 --create-home app
 COPY --from=api /app ./
 USER app
 ENV ASPNETCORE_URLS=http://+:8080 \
-    DataProtection__KeysPath=/data/keys \
-    Storage__Path=/data/files \
     ForwardedHeaders__Enabled=true
-VOLUME /data
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q ok <&3"]
 ENTRYPOINT ["dotnet", "ReceitasMercado.Api.dll"]

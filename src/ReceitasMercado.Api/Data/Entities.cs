@@ -346,6 +346,7 @@ public class Arquivo
     public string ContentType { get; set; } = "";
     public long TamanhoBytes { get; set; }
     public string CaminhoRelativo { get; set; } = "";
+    public byte[] Conteudo { get; set; } = [];
     public Guid? CriadoPorUsuarioId { get; set; }
     public DateTimeOffset CriadoEm { get; set; } = DateTimeOffset.UtcNow;
 }

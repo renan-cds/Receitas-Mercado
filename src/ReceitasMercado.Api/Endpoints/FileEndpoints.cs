@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReceitasMercado.Api.Data;
 using ReceitasMercado.Api.Infrastructure;
-using ReceitasMercado.Api.Integrations;
 
 namespace ReceitasMercado.Api.Endpoints;
 
@@ -29,7 +28,7 @@ public static class FileEndpoints
         var g = api.MapGroup("/arquivos").RequireAuthorization();
 
         g.MapPost("", async (
-            IFormFile arquivo, TenantContext t, AppDbContext db, IFileStorage storage, TimeProvider clock, CancellationToken ct) =>
+            IFormFile arquivo, TenantContext t, AppDbContext db, TimeProvider clock, CancellationToken ct) =>
         {
             if (arquivo.Length == 0) throw BusinessException.BadRequest("ARQUIVO_VAZIO", "O arquivo está vazio.");
             if (arquivo.Length > MaxBytes)
@@ -46,25 +45,27 @@ public static class FileEndpoints
 
             var id = Guid.NewGuid();
             var relative = $"{t.DespensaId}/{id}{Extension(contentType)}";
-            await using (var stream = new MemoryStream(buffer, 0, read)) await storage.SaveAsync(relative, stream, ct);
+            var bytes = buffer.AsSpan(0, read).ToArray();
             var name = Path.GetFileName(arquivo.FileName);
             db.Arquivos.Add(new Arquivo
             {
                 Id = id, DespensaId = t.DespensaId, NomeOriginal = name.Length > 120 ? name[..120] : name, ContentType = contentType,
-                TamanhoBytes = read, CaminhoRelativo = relative, CriadoPorUsuarioId = t.UsuarioId, CriadoEm = clock.GetUtcNow(),
+                TamanhoBytes = read, CaminhoRelativo = relative, Conteudo = bytes, CriadoPorUsuarioId = t.UsuarioId, CriadoEm = clock.GetUtcNow(),
             });
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/arquivos/{id}", new { id, contentType, tamanhoBytes = read });
         }).Editor().DisableAntiforgery().WithMetadata(new RequestSizeLimitAttribute(MaxBytes + 64 * 1024));
 
         api.MapGroup("").RequireAuthorization().MapGet("/despensas/{despensaId:guid}/arquivos/{id:guid}", async (
-            Guid id, TenantContext t, AppDbContext db, IFileStorage storage, HttpContext http, CancellationToken ct) =>
+            Guid id, TenantContext t, AppDbContext db, HttpContext http, CancellationToken ct) =>
         {
-            var file = await db.Arquivos.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id && a.DespensaId == t.DespensaId, ct)
-                ?? throw BusinessException.NotFound("Arquivo");
-            var stream = storage.Open(file.CaminhoRelativo) ?? throw BusinessException.NotFound("Arquivo");
+            var file = await db.Arquivos.AsNoTracking()
+                .Where(a => a.Id == id && a.DespensaId == t.DespensaId)
+                .Select(a => new { a.Conteudo, a.ContentType })
+                .FirstOrDefaultAsync(ct) ?? throw BusinessException.NotFound("Arquivo");
+            if (file.Conteudo.Length == 0) throw BusinessException.NotFound("Arquivo");
             http.Response.Headers.CacheControl = "private, max-age=86400";
-            return Results.File(stream, file.ContentType, enableRangeProcessing: false);
+            return Results.File(file.Conteudo, file.ContentType, enableRangeProcessing: false);
         }).Leitor();
     }
 }

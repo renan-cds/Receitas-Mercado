@@ -16,6 +16,18 @@ Documentação funcional e técnica: [docs/PLANEJAMENTO.md](docs/PLANEJAMENTO.md
 
 ASP.NET Core 8 (minimal APIs) · EF Core + PostgreSQL 16 · React 19 + TypeScript + Vite + Tailwind · PWA (vite-plugin-pwa).
 
+## Publicar de graça (Render + Neon)
+
+Não use o Postgres free do Render (expira em 30 dias e apaga o dado). O app já guarda **login e imagens no PostgreSQL**, então o disco do host pode sumir a cada sleep.
+
+1. Crie um projeto em [Neon](https://neon.tech) (plano Free, sem cartão). Copie a connection string com `sslmode=require`.
+2. No [Render](https://render.com), **New → Blueprint** neste repositório (`render.yaml`), plano Free. Quando pedir `ConnectionStrings__Default`, cole a string do Neon.
+3. Aguarde o primeiro deploy. A URL `https://….onrender.com` já vem com HTTPS. O primeiro clique do dia pode levar cerca de um minuto (o app dorme após 15 min sem tráfego); o banco no Neon **não é apagado**.
+
+Alternativa .NET nativa: Azure App Service plano **F1** + a mesma string do Neon. Não ligue Always On (isso cobra). Cota de 60 min de CPU/dia.
+
+Oracle Always Free continua sendo o único $0 sem cold start, se a VM provisionar.
+
 ## Executando com Docker
 
 ```bash
