@@ -46,6 +46,16 @@ public static partial class IngredientTextParser
     [GeneratedRegex(@"^(?<range>\s*(?:-|a|ou|to)\s*\d+(?:[.,]\d+)?)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
     private static partial Regex RangeRegex();
 
+    public static string? ResolveUnit(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var normalized = TextNormalizer.Normalize(raw).TrimEnd('.');
+        if (UnitCatalog.Find(raw.Trim()) is { } direct) return direct.Code;
+        if (UnitLookup.TryGetValue(normalized, out var code)) return code;
+        var (_, unit) = ExtractUnit(normalized);
+        return unit;
+    }
+
     public static ParsedIngredient Parse(string? text)
     {
         var original = (text ?? string.Empty).Trim();
