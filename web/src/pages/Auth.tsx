@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { fieldErrors, post } from '../lib/api'
+import { fieldErrors, post, rememberPantry } from '../lib/api'
 import type { Me } from '../lib/types'
 import { Button, Card, ErrorNote, TextInput } from '../components/ui'
 import { usePageTitle } from '../lib/hooks'
@@ -25,6 +25,7 @@ export function AuthPage({ mode }: { mode: 'entrar' | 'registrar' }) {
     setError(null)
     try {
       const me = await post<Me>(mode === 'entrar' ? '/auth/entrar' : '/auth/registrar', mode === 'entrar' ? { email, senha } : { email, senha, nome })
+      rememberPantry(me)
       client.setQueryData(['me'], me)
       navigate(next, { replace: true })
     } catch (err) {

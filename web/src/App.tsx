@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { SessionProvider } from './lib/session'
 import { Layout } from './components/Layout'
-import { Spinner } from './components/ui'
+import { ErrorNote, Spinner } from './components/ui'
 import { AuthPage } from './pages/Auth'
 import { InvitePage } from './pages/Invite'
 import { HomePage } from './pages/Home'
@@ -22,7 +22,7 @@ export function App() {
 
   return (
     <SessionProvider>
-      {(me, loading) => {
+      {(me, loading, error, retry) => {
         if (publicPath) {
           if (me) return <Navigate to="/" replace />
           return (
@@ -33,7 +33,16 @@ export function App() {
           )
         }
         if (loading) return <Spinner label="Carregando…" />
-        if (!me) return <Navigate to={target} replace />
+        if (!me) {
+          if (error) {
+            return (
+              <div className="mx-auto max-w-md p-6">
+                <ErrorNote error={error} onRetry={retry} />
+              </div>
+            )
+          }
+          return <Navigate to={target} replace />
+        }
         return (
           <Routes>
             <Route element={<Layout />}>

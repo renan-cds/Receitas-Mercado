@@ -6,14 +6,16 @@ import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import { App } from './App'
 import { ToastProvider } from './components/ui'
-import { ApiError } from './lib/api'
+import { isRetryable } from './lib/api'
 
 const client = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 15_000,
       refetchOnWindowFocus: true,
-      retry: (count, error) => !(error instanceof ApiError && error.status >= 400 && error.status < 500) && count < 2,
+      refetchOnReconnect: true,
+      retry: (count, error) => isRetryable(error) && count < 4,
+      retryDelay: (i) => Math.min(500 * 2 ** i, 8000),
     },
   },
 })

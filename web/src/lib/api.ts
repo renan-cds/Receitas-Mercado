@@ -1,3 +1,5 @@
+import type { Me } from './types'
+
 export class ApiError extends Error {
   status: number
   code: string
@@ -19,6 +21,27 @@ export function setActivePantry(id: string | null) {
 }
 export function getActivePantry() { return activePantry }
 
+/** Define o cabeçalho da despensa na hora, antes das telas pedirem dados. */
+export function rememberPantry(me: Me | null | undefined) {
+  if (!me?.despensas.length) return
+  const chosen = localStorage.getItem('rm.despensa')
+  const pantry = me.despensas.find((d) => d.id === chosen)
+    ?? me.despensas.find((d) => d.id === me.despensaAtivaId)
+    ?? me.despensas[0]
+  if (pantry) setActivePantry(pantry.id)
+}
+
+export function isRetryable(error: unknown) {
+  if (!(error instanceof ApiError)) return true
+  if (error.status === 0 || error.code === 'SEM_CONEXAO' || error.code === 'DESPENSA_OBRIGATORIA') return true
+  if (error.status === 429 || error.status >= 500) return true
+  return false
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export function newKey() {
   return crypto.randomUUID()
 }
@@ -36,8 +59,16 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
     body = JSON.stringify(opts.body)
   }
   let response: Response
+  const send = () => fetch(`/api${path}`, { method: opts.method ?? 'GET', headers, body, credentials: 'same-origin', signal: opts.signal })
   try {
-    response = await fetch(`/api${path}`, { method: opts.method ?? 'GET', headers, body, credentials: 'same-origin', signal: opts.signal })
+    try {
+      response = await send()
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') throw error
+      // PWA/iOS e host que dorme: o primeiro fetch após reabrir costuma falhar.
+      await delay(400)
+      response = await send()
+    }
   } catch (error) {
     if ((error as Error).name === 'AbortError') throw error
     throw new ApiError(0, 'SEM_CONEXAO', 'Sem conexão com o servidor. Verifique sua internet e tente novamente.')
