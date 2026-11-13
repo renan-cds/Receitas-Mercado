@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{76C859C2-5CE0-4B46-94F2-14342B53C525}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceitasMercado.Domain", "src\ReceitasMercado.Domain\ReceitasMercado.Domain.csproj", "{D18E15E6-F421-4CF5-B326-450B9066FF10}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceitasMercado.Api", "src\ReceitasMercado.Api\ReceitasMercado.Api.csproj", "{0FBDFC14-2352-4915-868B-D77F01C20497}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED235F20-5253-4E53-B8E5-9EE81DE608A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceitasMercado.UnitTests", "tests\ReceitasMercado.UnitTests\ReceitasMercado.UnitTests.csproj", "{B568BF78-5517-4304-B2FD-63272FFEAFB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceitasMercado.IntegrationTests", "tests\ReceitasMercado.IntegrationTests\ReceitasMercado.IntegrationTests.csproj", "{51BB36DE-74BC-422D-8FDA-84B2D816C79A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D18E15E6-F421-4CF5-B326-450B9066FF10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D18E15E6-F421-4CF5-B326-450B9066FF10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D18E15E6-F421-4CF5-B326-450B9066FF10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D18E15E6-F421-4CF5-B326-450B9066FF10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FBDFC14-2352-4915-868B-D77F01C20497}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FBDFC14-2352-4915-868B-D77F01C20497}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FBDFC14-2352-4915-868B-D77F01C20497}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FBDFC14-2352-4915-868B-D77F01C20497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B568BF78-5517-4304-B2FD-63272FFEAFB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B568BF78-5517-4304-B2FD-63272FFEAFB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B568BF78-5517-4304-B2FD-63272FFEAFB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B568BF78-5517-4304-B2FD-63272FFEAFB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51BB36DE-74BC-422D-8FDA-84B2D816C79A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51BB36DE-74BC-422D-8FDA-84B2D816C79A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51BB36DE-74BC-422D-8FDA-84B2D816C79A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51BB36DE-74BC-422D-8FDA-84B2D816C79A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D18E15E6-F421-4CF5-B326-450B9066FF10} = {76C859C2-5CE0-4B46-94F2-14342B53C525}
+		{0FBDFC14-2352-4915-868B-D77F01C20497} = {76C859C2-5CE0-4B46-94F2-14342B53C525}
+		{B568BF78-5517-4304-B2FD-63272FFEAFB9} = {ED235F20-5253-4E53-B8E5-9EE81DE608A7}
+		{51BB36DE-74BC-422D-8FDA-84B2D816C79A} = {ED235F20-5253-4E53-B8E5-9EE81DE608A7}
+	EndGlobalSection
+EndGlobal
